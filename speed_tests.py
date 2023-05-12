@@ -2,7 +2,7 @@ import numpy as np
 from PIL import Image
 from time import perf_counter
 
-test_iters = 10_000
+test_iters = 1
 tests = [
     #"asarray",
     #"array",

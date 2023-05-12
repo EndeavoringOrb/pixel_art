@@ -7,6 +7,7 @@ import io
 import numpy as np
 import sentence_similarity as ss
 from skimage.transform import resize
+from skimage import io as ski_io
 from time import perf_counter, localtime, time, sleep
 import os
 import threading
@@ -79,7 +80,7 @@ if load_model:
 warnings.filterwarnings("ignore", category=UserWarning, module="urllib3")
 
 # Create a connection pool
-adapter = HTTPAdapter(pool_connections=download_thread_number,max_retries=0)
+adapter = HTTPAdapter(pool_connections=download_thread_number,pool_maxsize=download_thread_number,max_retries=0)
 http = requests.Session()
 http.mount("https://", adapter)
 http.mount("http://", adapter)
@@ -109,34 +110,25 @@ def download_images():
         url = row['URL']
         try:
             response = http.get(url)
-            #response = requests.get(url)
+            # Read image from io.BytesIO
+            img = np.asarray(Image.open(io.BytesIO(response.content),mode="r"))
+            img = np.clip(img[:,:,:3], 0, 1)
         except Exception as e:
-            # ReadTimeout
-            #print(e)
             row_queue.task_done()
+            #thinsdg = e.args[0]
+            #if e.args[0] == 'too many indices for array: array is 2-dimensional, but 3 were indexed':
+            #    img = np.repeat(img, 3, axis=2)
+            #    img = np.clip(img[:,:,:3], 0, 1)
+            #else:
             continue
-        try:
-            img = Image.open(io.BytesIO(response.content),mode='r')
-        except Exception as e:
-            # UnidentifiedImageError
-            #print(e)
-            row_queue.task_done()
-            continue
-        try:
-            img = np.clip(np.asarray(img)[:,:,:3], 0, 1)
-        except IndexError as e:
-            #print(e)
-            row_queue.task_done()
-            continue
+
         if text_embedding_type == "bert":
             text_embedding = ss.get_bert_embedding(row['TEXT'])
         elif text_embedding_type == "mini":
             text_embedding = ss.get_embeddings(row['TEXT'])
         else:
             text_embedding = ss.get_clip_embeddings(row['TEXT'])
-        if text_embedding == None:
-            row_queue.task_done()
-            continue
+        
         shape = img.shape
         ratio = shape[1]/shape[0]
         if crop_imgs:
@@ -230,8 +222,6 @@ for filename in os.listdir("data/archive"):
         for index, row in df.iterrows():
             while row_queue.qsize() > row_queue_max:
                 sleep(0.1)
-            #print(total_index)
-            #print(loaded_row)
             if total_index > loaded_row:
                 row_queue.put(row)
             else:
