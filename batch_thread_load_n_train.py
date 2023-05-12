@@ -112,7 +112,9 @@ def download_images():
             response = http.get(url)
             # Read image from io.BytesIO
             img = np.asarray(Image.open(io.BytesIO(response.content),mode="r"))
-            img = np.clip(img[:,:,:3], 0, 1)
+            img = img[:,:,:3]
+            if np.max(img) > 1:
+                img = img / 255
         except Exception as e:
             row_queue.task_done()
             #thinsdg = e.args[0]
