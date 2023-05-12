@@ -4,9 +4,12 @@
 !pip install scikit-image
 !pip install queue
 !pip install tensorflow
+!pip install wget
+
 
 
 print("importing modules...")
+import wget
 import train
 import pandas as pd
 import requests
