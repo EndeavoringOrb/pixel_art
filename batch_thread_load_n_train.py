@@ -113,7 +113,7 @@ def download_images():
             # Read image from io.BytesIO
             img = np.asarray(Image.open(io.BytesIO(response.content),mode="r"))
             img = img[:,:,:3]
-            if np.max(img) > 1:
+            if img.dtype == np.uint8:
                 img = img / 255
         except Exception as e:
             row_queue.task_done()
