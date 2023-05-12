@@ -8,7 +8,7 @@ maxlen = 256
 
 clip_model = CLIPTextModel.from_pretrained("openai/clip-vit-base-patch32")
 clip_tokenizer = AutoTokenizer.from_pretrained("openai/clip-vit-base-patch32", max_length=maxlen)
-model = SentenceTransformer("C:/Users/aaron/.cache/torch/sentence_transformers/sentence-transformers_all-MiniLM-L6-v2")
+model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 model_name = 'bert-base-uncased'
 bert_model = BertModel.from_pretrained(model_name)
 bert_tokenizer = BertTokenizer.from_pretrained(model_name)
